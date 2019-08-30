@@ -11,8 +11,8 @@
 //#define CAMERA_MODEL_M5STACK_PSRAM
 #define CAMERA_MODEL_AI_THINKER
 
-const char* ssid = "Buffalo-G-D6E8";
-const char* password = "35sb8n36dx7fe";
+const char* ssid = "**********";    //Edit for your Environment
+const char* password = "*********"; //Edit for your Environment
 
 //CAM Robot Configuration
 #define FLASH_GPIO_NUM   4
