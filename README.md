@@ -16,5 +16,6 @@
 * https://t.co/VGJg1DwRf6
 
 ## Reffered from followings
+* https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/Camera/CameraWebServer
 * https://github.com/espressif/esp-who/blob/master/examples/single_chip/camera_web_server/main/www/index_ov2640.html
 * https://gist.github.com/me-no-dev/f137a950ce6dedb641d427d8db6355d2
