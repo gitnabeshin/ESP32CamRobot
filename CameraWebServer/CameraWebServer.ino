@@ -8,80 +8,22 @@
 
 // Select camera model
 //#define CAMERA_MODEL_WROVER_KIT
+//#define CAMERA_MODEL_ESP_EYE
 //#define CAMERA_MODEL_M5STACK_PSRAM
+//#define CAMERA_MODEL_M5STACK_WIDE
 #define CAMERA_MODEL_AI_THINKER
 
-const char* ssid = "**********";    //Edit for your Environment
-const char* password = "*********"; //Edit for your Environment
+#include "camera_pins.h"
+#include "robot_pins.h"
 
-//CAM Robot Configuration
-#define FLASH_GPIO_NUM   4
-#define MOTOR_A1        12 
-#define MOTOR_A2        13
-#define MOTOR_B1        14
-#define MOTOR_B2        15
+//const char* ssid = "*********";
+//const char* password = "*********";
 
-#if defined(CAMERA_MODEL_WROVER_KIT)
-#define PWDN_GPIO_NUM    -1
-#define RESET_GPIO_NUM   -1
-#define XCLK_GPIO_NUM    21
-#define SIOD_GPIO_NUM    26
-#define SIOC_GPIO_NUM    27
-
-#define Y9_GPIO_NUM      35
-#define Y8_GPIO_NUM      34
-#define Y7_GPIO_NUM      39
-#define Y6_GPIO_NUM      36
-#define Y5_GPIO_NUM      19
-#define Y4_GPIO_NUM      18
-#define Y3_GPIO_NUM       5
-#define Y2_GPIO_NUM       4
-#define VSYNC_GPIO_NUM   25
-#define HREF_GPIO_NUM    23
-#define PCLK_GPIO_NUM    22
-
-#elif defined(CAMERA_MODEL_M5STACK_PSRAM)
-#define PWDN_GPIO_NUM     -1
-#define RESET_GPIO_NUM    15
-#define XCLK_GPIO_NUM     27
-#define SIOD_GPIO_NUM     25
-#define SIOC_GPIO_NUM     23
-
-#define Y9_GPIO_NUM       19
-#define Y8_GPIO_NUM       36
-#define Y7_GPIO_NUM       18
-#define Y6_GPIO_NUM       39
-#define Y5_GPIO_NUM        5
-#define Y4_GPIO_NUM       34
-#define Y3_GPIO_NUM       35
-#define Y2_GPIO_NUM       32
-#define VSYNC_GPIO_NUM    22
-#define HREF_GPIO_NUM     26
-#define PCLK_GPIO_NUM     21
-
-#elif defined(CAMERA_MODEL_AI_THINKER)
-#define PWDN_GPIO_NUM     32
-#define RESET_GPIO_NUM    -1
-#define XCLK_GPIO_NUM      0
-#define SIOD_GPIO_NUM     26
-#define SIOC_GPIO_NUM     27
-
-#define Y9_GPIO_NUM       35
-#define Y8_GPIO_NUM       34
-#define Y7_GPIO_NUM       39
-#define Y6_GPIO_NUM       36
-#define Y5_GPIO_NUM       21
-#define Y4_GPIO_NUM       19
-#define Y3_GPIO_NUM       18
-#define Y2_GPIO_NUM        5
-#define VSYNC_GPIO_NUM    25
-#define HREF_GPIO_NUM     23
-#define PCLK_GPIO_NUM     22
-
-
-#else
-#error "Camera model not selected"
-#endif
+//ESP32 SoftAP Configration
+const char ssid[] = "ESP32-NET";
+const char pass[] = "Espressif_dev";
+const IPAddress ip(192,168,0,12);
+const IPAddress subnet(255,255,255,0);
 
 void startCameraServer();
 
@@ -122,6 +64,11 @@ void setup() {
     config.fb_count = 1;
   }
 
+#if defined(CAMERA_MODEL_ESP_EYE)
+  pinMode(13, INPUT_PULLUP);
+  pinMode(14, INPUT_PULLUP);
+#endif
+
   // camera init
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
@@ -129,23 +76,46 @@ void setup() {
     return;
   }
 
-  //drop down frame size for higher initial frame rate
   sensor_t * s = esp_camera_sensor_get();
+  //initial sensors are flipped vertically and colors are a bit saturated
+  if (s->id.PID == OV3660_PID) {
+    s->set_vflip(s, 1);//flip it back
+    s->set_brightness(s, 1);//up the blightness just a bit
+    s->set_saturation(s, -2);//lower the saturation
+  }
+  //drop down frame size for higher initial frame rate
   s->set_framesize(s, FRAMESIZE_QVGA);
 
-  WiFi.begin(ssid, password);
+#if defined(CAMERA_MODEL_M5STACK_WIDE)
+  s->set_vflip(s, 1);
+  s->set_hmirror(s, 1);
+#endif
 
+  //SoftAP
+  WiFi.softAP(ssid,pass);
+  delay(100);
+  WiFi.softAPConfig(ip,ip,subnet);
+  IPAddress myIP = WiFi.softAPIP();
+
+/*
+  WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
   Serial.println("");
   Serial.println("WiFi connected");
+*/
+
+  Serial.println("ESP32 SoftAP Mode start.");
+  Serial.print("SSID:");
+  Serial.println(ssid);
 
   startCameraServer();
 
   Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
+  //Serial.print(WiFi.localIP());
+  Serial.print(myIP);
   Serial.println("' to connect");
 
   pinMode(FLASH_GPIO_NUM, OUTPUT);
