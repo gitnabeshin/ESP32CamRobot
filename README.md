@@ -9,6 +9,10 @@
   * Motor Controller: L9110S H-Bridge motor driver module (Controlled via GPIO 12,13,14,15) 
   * 2 Blue LEDs for Eyes
   * 1 Battery (5000mAh Output 5V 2.1A)
+* Web UI Controller
+  * Provides WiFi access point and Fixed IP address by ESP32 SoftAP Mode
+  * stop, forward, backward, turn right, turn left
+  * Flash LED ON/OFF (ESP32-CAM buildin)
 
 ![IMG_2352](https://user-images.githubusercontent.com/52347942/64023013-60aa6200-cb72-11e9-97f0-252137971a61.jpg)
 
